@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy Microfrontends to GitHub Pages
 
 on:
   push:
@@ -6,9 +6,8 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -18,35 +17,46 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies and build mf-shell
+      - name: Build mf-shell
         run: |
           cd mf-shell
           npm install
           npm run build
+          cd ..
 
-      - name: Install dependencies and build mf-characters
+      - name: Build mf-characters
         run: |
           cd mf-characters
           npm install
           npm run build
+          cd ..
 
-      - name: Install dependencies and build mf-character-detail
+      - name: Build mf-character-detail
         run: |
           cd mf-character-detail
           npm install
           npm run build
+          cd ..
 
       - name: Prepare deployment folder
         run: |
-          mkdir -p deploy/mf-shell
-          mkdir -p deploy/mf-characters
-          mkdir -p deploy/mf-character-detail
+          mkdir -p deploy/mf-shell deploy/mf-characters deploy/mf-character-detail
           cp -r mf-shell/dist/* deploy/mf-shell/
           cp -r mf-characters/dist/* deploy/mf-characters/
           cp -r mf-character-detail/dist/* deploy/mf-character-detail/
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./deploy
+          path: ./deploy
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
