@@ -9,7 +9,7 @@ const App = () => {
       <Layout>
         <Routes>
           <Route path="/" element={<CharactersRemote />} />
-          <Route path="/character/:id" element={<CharacterDetailRemote />} />
+          <Route path="character/:id/*" element={<CharacterDetailRemote />} />
         </Routes>
       </Layout>
     </BrowserRouter>
